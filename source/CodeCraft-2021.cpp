@@ -5,7 +5,7 @@
 
 #ifdef TEST
 // 训练数据文件
-const char *TestFile = "../training-data/demo.txt";
+const char *TestFile = "../training-data/training-1.txt";
 // 输出文件
 const char *OutFile = "../output.txt";
 #endif
@@ -70,6 +70,8 @@ void addVM(VictualMachine &vm);
 // 如果添加失败，将返回false
 bool addVM(VictualMachine &vm, vector<Server> &serverV);
 
+// 删除虚拟机
+void delVM(int id);
 
 int main() {
 
@@ -195,6 +197,7 @@ void process(int day) {
             addVM(vm);
         } else {
             // todo:执行删除虚拟机操作
+            delVM(requestI.vmID);
         }
     }
 
@@ -298,4 +301,24 @@ bool addVM(VictualMachine &vm, vector<Server> &serverV) {
         }
     }
     return isSuccess;
+}
+
+// 删除虚拟机
+void delVM(int id) {
+    // 在已购买的服务器列表中查找
+    for (auto &serverI:serverResource) {
+        if (serverI.hasVM(id)) {
+            serverI.eraseVM(id);
+            return;
+        }
+    }
+    // 在将购买的服务器列表中查找
+    for (auto &item:ToBuy) {
+        for (auto &serverI:item.second) {
+            if (serverI.hasVM(id)) {
+                serverI.eraseVM(id);
+                return;
+            }
+        }
+    }
 }

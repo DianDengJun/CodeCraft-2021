@@ -335,15 +335,37 @@ public:
 
     // 是否在当前服务器中存在某ID号的虚拟机
     bool hasVM(int id) {
-        for (auto &i : A) {
-            if (i.ID == id)
+        for (auto &vm : A) {
+            if (vm.ID == id)
                 return true;
         }
-        for (auto &i : B) {
-            if (i.ID == id)
+        for (auto &vm : B) {
+            if (vm.ID == id)
                 return true;
         }
         return false;
+    }
+
+    // 在当前服务器中删除ID号虚拟机
+    void eraseVM(int id) {
+        // 在A中检测
+        for (auto it = A.begin(); it != A.end(); it++) {
+            if (it->ID == id) {
+                usedCpuA -= it->cpu() / (it->isDouble() ? 2 : 1);
+                usedRamA -= it->ram() / (it->isDouble() ? 2 : 1);
+                A.erase(it);
+                break;
+            }
+        }
+        // 在B中检测
+        for (auto it = B.begin(); it != B.end(); it++) {
+            if (it->ID == id) {
+                usedCpuB -= it->cpu() / (it->isDouble() ? 2 : 1);
+                usedRamB -= it->ram() / (it->isDouble() ? 2 : 1);
+                B.erase(it);
+                break;
+            }
+        }
     }
 };
 
