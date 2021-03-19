@@ -96,19 +96,29 @@ public:
         return type.cpu;
     }
 
-    // 获取内存大小
-    inline int ram() const {
-        return type.ram;
-    }
-
     // 获取单个节点CPU核心数
     inline int halfCpu() const {
         return cpu() / 2;
     }
 
+    // 获取某节点CPU核心数
+    inline int cpu(Node node) const {
+        return node == Node::Both ? cpu() : halfCpu();
+    }
+
+    // 获取内存大小
+    inline int ram() const {
+        return type.ram;
+    }
+
     // 获取单个节点内存大小
     inline int halfRam() const {
         return ram() / 2;
+    }
+
+    // 获取某节点内存大小
+    inline int ram(Node node) const {
+        return node == Node::Both ? ram() : halfRam();
     }
 
     // 获取型号
@@ -126,13 +136,8 @@ public:
         return type.dailyCost;
     }
 
-    // 已用CPU核心数
-    inline int usedCpu() const {
-        return usedCpuA + usedCpuB;
-    }
-
     // 某节点已用CPU核心数
-    int usedCpuCores(Node node) const {
+    int usedCpu(Node node = Node::Both) const {
         int use{0};
         switch (node) {
             case Node::A:
@@ -142,19 +147,14 @@ public:
                 use = usedCpuB;
                 break;
             case Node::Both:
-                use = usedCpu();
+                use = usedCpuA + usedCpuB;
                 break;
         }
         return use;
     }
 
-    // 已用内存大小
-    inline int usedRam() const {
-        return usedRamA + usedRamB;
-    }
-
     // 某节点已用内存大小
-    int usedRam(Node node) const {
+    int usedRam(Node node = Node::Both) const {
         int use{0};
         switch (node) {
             case Node::A:
@@ -164,54 +164,35 @@ public:
                 use = usedRamB;
                 break;
             case Node::Both:
-                use = usedRam();
+                use = usedRamA + usedRamB;
                 break;
         }
         return use;
     }
 
-    // 空闲CPU核心数
-    inline int freeCpu() const {
-        return cpu() - usedCpu();
-    }
-
     // 某节点空闲CPU核心数
-    int freeCpu(Node node) const {
-        int cores;
-        switch (node) {
-            case Node::A:
-                cores = halfCpu() - usedCpuA;
-                break;
-            case Node::B:
-                cores = halfCpu() - usedCpuB;
-                break;
-            case Node::Both:
-                cores = freeCpu();
-                break;
-        }
-        return cores;
-    }
-
-    // 空闲内存大小
-    inline int freeRam() const {
-        return ram() - usedRam();
+    inline int freeCpu(Node node = Node::Both) const {
+        return cpu(node) - usedCpu(node);
     }
 
     // 某节点空闲内存大小
-    int freeRam(Node node) const {
-        int size;
-        switch (node) {
-            case Node::A:
-                size = halfRam() - usedRamA;
-                break;
-            case Node::B:
-                size = halfRam() - usedRamB;
-                break;
-            case Node::Both:
-                size = freeRam();
-                break;
-        }
-        return size;
+    inline int freeRam(Node node = Node::Both) const {
+        return ram(node) - usedRam(node);
+    }
+
+    // 返回某节点CPU的闲置率
+    inline double freeRateCpu(Node node = Node::Both) const {
+        return double(usedCpu(node)) / cpu(node);
+    }
+
+    // 返回某节点RAM的闲置率
+    inline double freeRateRam(Node node = Node::Both) const {
+        return double(usedRam(node)) / ram(node);
+    }
+
+    // 返回某节点的平均闲置率
+    inline double freeRate(Node node = Node::Both) const {
+        return 0.5 * (freeRateCpu(node) + freeRateRam(node));
     }
 
     // 检测当前服务器所用资源是否已满
@@ -281,7 +262,7 @@ public:
             usedRamA += vm.ram() / 2;
             usedRamB += vm.ram() / 2;
         } else
-            throw invalid_argument{"Can not add this Dual VM!"};
+            throw invalid_argument{"Can not add this Double VM!"};
     }
 
     // 添加单节点虚拟机到指定节点
@@ -316,7 +297,7 @@ public:
             addSingleVM(vm, Node::B);
             return Node::B;
         } else
-            throw invalid_argument{"Can not add this Sig VM!"};
+            throw invalid_argument{"Can not add this Single VM!"};
     }
 
     // 添加一个虚拟机(综合判断)

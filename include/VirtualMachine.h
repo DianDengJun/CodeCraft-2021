@@ -4,8 +4,6 @@
 #ifndef VIRTUALMACHINE_H
 #define VIRTUALMACHINE_H
 
-#include <utility>
-
 #include "Config.h" // 包含公共配置头文件
 
 // 虚拟机类型
