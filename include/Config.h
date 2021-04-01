@@ -5,7 +5,6 @@
  *
  * 如果要导入某头文件，只需在公共配置头文件中导入
  */
-
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -16,6 +15,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <set>
+#include <ctime>
+#include <pthread.h>
 
 // 引用标准命名空间
 using namespace std;
@@ -25,8 +27,7 @@ using namespace std;
 #ifdef TEST
 
 #include <cassert> // 断言
-#include <ctime>   // 程序计时
 #include <fstream> // 文件流
 
 #endif
-#endif // CONFIG_H
+#endif //CONFIG_H

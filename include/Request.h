@@ -1,62 +1,94 @@
 /**
  * 此头文件包含了: 请求类
  */
-
 #ifndef REQUEST_H
 #define REQUEST_H
 
 #include "Config.h" // 包含公共配置头文件
 
-// 请求操作标识
-enum class RequestFlag {
-    add, // 添加请求
-    del  // 删除请求
+// 类: 基本请求
+class BasicRequest {
+// 属性
+protected:
+    int vmID{0}; // 请求操作虚拟机的ID
+
+// 构造函数
+public:
+    // 默认构造函数
+    BasicRequest() = default;
+
+    // 显式构造函数
+    explicit BasicRequest(int vmId) : vmID{vmId} {}
+
+// 访问器和设置器
+public:
+    inline int getVMId() const {
+        return vmID;
+    }
+
+    inline void setVMId(int ID) {
+        vmID = ID;
+    }
 };
 
-// 类: 请求
-struct Request {
-    RequestFlag select; // 请求标识
-    string addModel;    // 创建(add)时的虚拟机型号
-    int vmID;           // 虚拟机ID
+// 类: 添加请求
+class AddRequest : public BasicRequest {
+// 属性
+private:
+    string addModel; // 创建(add)的虚拟机型号
+
+// 构造函数
+public:
+    // 默认构造函数
+    AddRequest() = default;
+
+    // 有参构造函数
+    AddRequest(int vmId, string model)
+            : BasicRequest(vmId), addModel(std::move(model)) {}
+
+// 访问器和设置器
+public:
+    inline const string &getAddModel() const {
+        return addModel;
+    }
+
+    inline void setAddModel(const string &model) {
+        this->addModel = model;
+    }
 };
 
-// 从流中输入请求
-istream &operator>>(istream &is, Request &request) {
-    string str;
+// 从流中输入 AddRequest
+istream &operator>>(istream &is, AddRequest &addRequest) {
+    // 临时字符串
+    string temp;
 
-    is.get();              // 读左括号
-    getline(is, str, ','); // 输入请求标识
-    is.get();              // 读空格
+    // 输入并解析请求添加的虚拟机型号
+    is >> temp;
+    addRequest.setAddModel(temp.substr(0, temp.size() - 1));
 
-    // 解析请求标识
-    if (str == "add") {
-        request.select = RequestFlag::add;
-        getline(is, request.addModel, ','); // 输入创建型号
-        is.get();                           // 读空格
-    } else
-        request.select = RequestFlag::del;
-
-    getline(is, str, ')');            // 读右括号
-    is.get();                         // 读换行
-    request.vmID = atoi(str.c_str()); // 转换为虚拟机ID
+    // 输入并解析请求添加的虚拟机ID
+    is >> temp;
+    addRequest.setVMId(atoi(temp.c_str()));
 
     // 返回输入流
     return is;
 }
 
-#ifdef TEST
-// 输出请求到流中
-ostream &operator<<(ostream &os, const Request &request) {
-    if (request.select == RequestFlag::add)
-        os << "add "
-           << request.addModel << " ";
-    else
-        os << "del ";
+// 类: 删除请求
+class DelRequest : public BasicRequest {
+};
 
-    os << request.vmID;
+// 从流中输入DelRequest
+istream &operator>>(istream &is, DelRequest &delRequest) {
+    // 临时字符串
+    string temp;
 
-    return os;
+    // 输入并解析请求删除的虚拟机ID
+    is >> temp;
+    delRequest.setVMId(atoi(temp.c_str()));
+
+    // 返回输入流
+    return is;
 }
-#endif
 
-#endif // REQUEST_H
+#endif //REQUEST_H
